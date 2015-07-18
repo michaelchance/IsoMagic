@@ -14,6 +14,9 @@
  * config - see CONFIG.MD
  * 		basePath - string, base path to mount the router on
  * 		document - filepath, the file to load into res.$ server side
+ *		static - object, Only matters for server. contains root and options, passed in 
+ * 				as express.static(root, options).  Defaults to '' and {}
+ * 				if static is passed a deliberate false, the static middleware will not be used
  * 		extensions - Array of extension config objects
  * 		browserEvents - Array of strings, browser events to bind to TLC client side
  * 		routes - Array of Route config objects
@@ -62,6 +65,9 @@
 		var _self = this;
 		
 		//Set some reasonable defaults
+		config.static = typeof config.static != 'undefined' ? config.static : {root:'.',options:{}}
+		if(config.static && !config.static.root){ config.static.root = '.'; }
+		if(config.static && !config.static.options){ config.static.options = {}; }
 		config.basePath = config.basePath || '/'
 		config.document = config.document || 'index.html'
 		config.browserEvents = config.browserEvents || [
@@ -71,6 +77,8 @@
 			"mouseleave",
 			"change"
 			]
+		config.extensions = config.document || {},
+		config.document = config.document || []
 		
 		//Making this a function so that it can't be (easily/accidentally) changed as a property.
 		//Since JS is weakly typed, this is more of a gesture than an actual security measure.
@@ -258,10 +266,16 @@
 		//Both sides instantiate _self.tlc
 		if(_self.server()){
 			var TLC = require('tlc');
-			var router = require('express').Router();
+			var express = require('express')();
+			var router = express.Router();
 			var fs = require('fs');
 			var cheerio = require('cheerio');
 			_self.tlc = new TLC();
+			
+			//attach static router if called for.  config defaults already handled
+			if(config.static){
+				router.use(express.static(config.static.root, config.static.options);
+				}
 			router.use(function(req,res,next){
 				fs.readFile(config.document,function(err,text){
 					if(err){

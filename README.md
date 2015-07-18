@@ -15,10 +15,11 @@ An Isomorphic Javascript Framework based on Express and TLC
 Install with npm
 `npm install isomagic`
 
-##### Server
+#### Server
 
-Write your index.js and run the server
+Write your index.js
 ```javascript
+//index.js
 var config = require('./path/to/config.json'); //configuration object, same object as the client
 var options = {...}; //some server options - often these are different on the client
 var IsoMagic = require('isomagic');
@@ -27,13 +28,17 @@ var myApp = new IsoMagic(config, options, function(){
 });
 ```
 
-##### Client
+#### Client
 
 Create your index.html.  There's a few files you're going to need to add to your head:
 * jQuery
 * the files enclosed in this project's clientrouter/ folder
 * tlc.js, available via `npm install tlc` or at https://github.com/michaelchance/tlc
 * isomagic.js from this project
+
+By default, IsoMagic includes `express.static` middleware pointed at the CWD, so it will
+serve those JS files as long as they're in your project, and you use the appropriate path.
+
 ```html
 <!doctype html>
 <html>
@@ -47,11 +52,13 @@ Create your index.html.  There's a few files you're going to need to add to your
 	<script type="text/javascript" src="path/to/tlc.js"></script>
 	<script type="text/javascript" src="path/to/isomagic.js"></script>
 	<script type="text/javascript">
-		//jQuery is currently required, so why not use a convenience method to load the config.json file?
-		$.getJSON('path/to/config.json', function(config){ // Same config object you loaded on the server
-			var options = {...} // Some options, often different from the server
-			var myApp = new IsoMagic(config, options, function(){
-				console.log('app has loaded!');
+		$(function(){
+			//jQuery is currently required, so why not use a convenience method to load the config.json file?
+			$.getJSON('path/to/config.json', function(config){ // Same config object you loaded on the server
+				var options = {...} // Some options, often different from the server
+				var myApp = new IsoMagic(config, options, function(){
+					console.log('app has loaded!');
+				});
 			});
 		}); 
 	</script>
@@ -62,7 +69,20 @@ Create your index.html.  There's a few files you're going to need to add to your
 </html>
 ```
 
-Next, you need to set up your Config, and install some Extensions
+Alright, we're serving some html!  Next you need to install some extensions, and configure your app
+
+### Extensions
+
+Extensions are functions that adhere to the following rules:
+* They recieve 2 arguments
+	* `_app` : the instance of the app being loaded
+	* `config` : the Extension Config object (see the Config section for more details)
+* They are isomorphic, assigning the above function to `module.exports` for nodejs (the server), or `window[extensionName]` for the client
+* They return an object that contains:
+	* `tlc` : a TLC module (an object containing TLC commands).  For more information, see https://github.com/michaelchance/tlc
+	* `middleware` : a bunch of middleware functions that follow the ExpressJS syntax (`function(req,res,next){}`)
+	* `middlewareBuilders` (Advanced Magic) : functions that [_return_ middleware functions](http://cdn.meme.am/instances/500x/61322803.jpg).  
+		They take an object as an argument, and construct a middleware function for more dynamic use cases
 
 ### Config
 
@@ -76,5 +96,3 @@ The config object is the soul of your application.
 	"browserEvents" : ["click","submit","mouseenter","mouseleave","change"], //Optional, default shown.  An array of browser events that IsoMagic will capture and process for you with TLC modules
 }
 ```
-
-### Extensions

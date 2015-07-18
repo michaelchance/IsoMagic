@@ -15,15 +15,19 @@ An Isomorphic Javascript Framework based on Express and TLC
 Install with npm
 `npm install isomagic`
 
+##### Server
+
 Write your index.js and run the server
 ```javascript
-var config = require('./path/to/config.json');//configuration object, same object as the client
-var options = {...} //some server options - often these are different on the client
+var config = require('./path/to/config.json'); //configuration object, same object as the client
+var options = {...}; //some server options - often these are different on the client
 var IsoMagic = require('isomagic');
 var myApp = new IsoMagic(config, options, function(){
 	myApp.listen(3000);
 });
 ```
+
+##### Client
 
 Create your index.html.  There's a few files you're going to need to add to your head:
 * jQuery

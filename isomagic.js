@@ -74,6 +74,8 @@
 		//Set some reasonable defaults
 		
 		callback = callback || function(){};
+		console.log('callback');
+		console.log(callback);
 		options = options || {};
 		
 		config.static = typeof config.static != 'undefined' ? config.static : {root:'.',options:{}}
@@ -185,14 +187,14 @@
 			}
 		
 		//Finally parse our config
-		_self._config(config);		
+		_self._config(config, callback);		
 		}
 	
-	IsoMagic.prototype._config = function(config){
+	IsoMagic.prototype._config = function(config, callback){
 		var _self = this;
 		_self._configureExtensions(config, function(){
 			_self._configureRouter(config);
-			callback();
+			callback(_self);
 			});
 		}
 	
@@ -313,7 +315,8 @@
 			}
 		for(var i in config.extensions){
 			var e = config.extensions[i];
-			_self.tlc.addModule(e.name, _self.ext[e.name].tlc);
+			// console.log(_self);
+			_self.tlc.addModule(e.id, _self.ext[e.id].tlc);
 			}
 		
 		//Since we're here, we know that 1) all extensions are loaded and 2) _self.tlc is instantiated,
@@ -341,8 +344,8 @@
 			
 		//Mount all the middleware specified in the config.  
 		//	Uses whatever method is specified, or "use" as a default
-		//	Uses whatever route|regex is specified, or '/' as a default
 		//		middleware specified as a string, "extname#mwfunc" will come use _self.ext[extname].middleware[mwfunc]
+		//	Uses whatever route|regex is specified, or '/' as a default
 		//		middleware specified as an object, with "type" : "extname#mwfunc" will pass that object to _self.ext[extname].middlewareBuilders[mwfunc], which should return a middleware function
 		//If this is the client, this repeats for clientMiddleware.  This middleware chain is run AFTER the main middleware chain, and only on success.
 		for(var i in config.routes){
@@ -354,6 +357,7 @@
 				if(typeof mw == 'object'){
 					var p = mw.type.split('#');
 					// console.log(mw.type);
+					// console.log(_self.ext[p[0]]);
 					mw_function = _self.ext[p[0]].middlewareBuilders[p[1]](mw);
 					}
 				else if(typeof mw == 'string'){
@@ -429,6 +433,7 @@
 	 * @param {int} port the port to listen on
 	 */
 	IsoMagic.prototype.listen = function(port){
+		var _self = this;
 		if(_self.server()){
 			// console.log('listening on port '+port);
 			_self.httpserver.listen(port);

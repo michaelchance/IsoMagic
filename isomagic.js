@@ -220,16 +220,16 @@
 			}
 		for(var i in config.extensions){
 			//set up callback for when extension has loaded.
-			var loaded = function(name, ext){
+			var loaded = function(id, ext){
 				var finished = true;
 				for(var j in config.extensions){
-					// console.log(config.extensions[j].name+" "+name);
-					if(config.extensions[j].name == name){
-						// console.log('loading extension '+name);
+					// console.log(config.extensions[j].id+" "+id);
+					if(config.extensions[j].id == id){
+						// console.log('loading extension '+id);
 						//load the extension and save it in _self.ext.  We also pass in some meaningful config info
-						_self.ext[name] = ext(_self, config.extensions[j]);
+						_self.ext[id] = ext(_self, config.extensions[j]);
 						}
-					else if(!_self.ext[config.extensions[j].name]){
+					else if(!_self.ext[config.extensions[j].id]){
 						//we found an extension that hasn't been instantiated, so we're not done
 						finished = false;
 						}
@@ -244,7 +244,7 @@
 			if(_self.server()){
 				//we're not asynchronous here, so just call the callback
 				var ext = require('./'+config.extensions[i].file);
-				loaded(config.extensions[i].name, ext);
+				loaded(config.extensions[i].id, ext);
 				}
 			else{
 				//There's some anonymous function wizardry here- basically it's to avoid scope issues since we're in a loop.
@@ -252,8 +252,8 @@
 				//breaking out of the scope.
 				$.getScript(config.extensions[i].file, (function(idx){
 					return function(){
-						// console.log(config.extensions[idx].name);
-						loaded(config.extensions[idx].name, window[config.extensions[idx].name]);
+						// console.log(config.extensions[idx].id);
+						loaded(config.extensions[idx].id, window[config.extensions[idx].id]);
 						}
 					})(i));
 				}
@@ -295,7 +295,7 @@
 			
 			//attach static router if called for.  config defaults already handled
 			if(config.static){
-				router.use(express.static(config.static.root, config.static.options);
+				router.use(express.static(config.static.root, config.static.options));
 				}
 			router.use(function(req,res,next){
 				fs.readFile(config.document,function(err,text){

@@ -89,7 +89,7 @@
 			"mouseleave",
 			"change"
 			]
-		config.extensions = config.document || {},
+		config.extensions = config.extensions || {},
 		config.document = config.document || []
 		
 		//Making this a function so that it can't be (easily/accidentally) changed as a property.
@@ -112,7 +112,6 @@
 		
 		//Instantiate our express instance, or client-side the Router ripped out of express
 		if(_self.server()){
-
 			var express = require('express');
 			var http = require('http');
 			
@@ -176,7 +175,7 @@
 			//Expose a utility function for navigating to a page outside of a traditional link click.
 			//This essentially replaces `window.location = "http://..."`
 			_self.navigate = function(url){
-				console.log('navigate');
+				// console.log('navigate');
 				handlereq({'url':url});
 				}
 			//When the back button is hit, send the req back through the middleware chain.
@@ -186,15 +185,7 @@
 			}
 		
 		//Finally parse our config
-		if(options.config){
-			_self.config(options.config);
-			}
-		else {
-			//todo throw exception, config is required
-			}
-		
-		
-		
+		_self._config(config);		
 		}
 	
 	IsoMagic.prototype._config = function(config){
@@ -212,7 +203,6 @@
 		//set up to store extensions inside of _self.ext so that other extensions can directly access each other
 		//		Design note: it's not ideal to let extensions be so tightly coupled, but this is real life and sometimes you need it so fuck off.
 		_self.ext = {};
-		
 		//this array will fill up with true values as everything gets set up, and when it's all true, we'll call the callback
 		var complete = new Array(config.extensions.length);
 		for(var i in complete){
@@ -243,14 +233,14 @@
 				}
 			if(_self.server()){
 				//we're not asynchronous here, so just call the callback
-				var ext = require('./'+config.extensions[i].file);
+				var ext = require(config.extensions[i].require);
 				loaded(config.extensions[i].id, ext);
 				}
 			else{
 				//There's some anonymous function wizardry here- basically it's to avoid scope issues since we're in a loop.
 				//the value of i changes on each iteration, so by passing it into a function that returns a function we're
 				//breaking out of the scope.
-				$.getScript(config.extensions[i].file, (function(idx){
+				$.getScript(config.extensions[i].filePath, (function(idx){
 					return function(){
 						// console.log(config.extensions[idx].id);
 						loaded(config.extensions[idx].id, window[config.extensions[idx].id]);
@@ -440,6 +430,7 @@
 	 */
 	IsoMagic.prototype.listen = function(port){
 		if(_self.server()){
+			// console.log('listening on port '+port);
 			_self.httpserver.listen(port);
 			}
 		else {

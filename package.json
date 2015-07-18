@@ -1,6 +1,6 @@
 {
   "name": "isomagic",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "An IsoMorphic JavaScript Framework based on Express and TLC",
   "main": "isomagic.js",
   "scripts": {
@@ -13,5 +13,10 @@
     "server"
   ],
   "author": "michael chance",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "cheerio": "^0.19.0",
+    "express": "^4.13.1",
+    "tlc": "^0.1.7"
+  }
 }

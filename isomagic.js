@@ -74,14 +74,13 @@
 		//Set some reasonable defaults
 		
 		callback = callback || function(){};
-		console.log('callback');
-		console.log(callback);
 		options = options || {};
 		
-		config.static = typeof config.static != 'undefined' ? config.static : {root:'.',options:{}}
+		config.static = typeof config.static != 'undefined' ? config.static : {root:'.',options:{"index":false}}
 		if(config.static && !config.static.root){ config.static.root = '.'; }
 		if(config.static && !config.static.options){ config.static.options = {"index":false}; }
 		if(typeof config.static.options.index !== 'undefined' && !config.static.options.index){config.static.options.index = false;}
+		
 		config.basePath = config.basePath || '/'
 		config.document = config.document || 'index.html'
 		config.browserEvents = config.browserEvents || [
@@ -369,8 +368,9 @@
 				if(r.regex){
 					r.route = new RegExp(r.regex);
 					}
-				r.method = r.method || 'use'
-				r.route = r.route || '/'
+				r.method = r.method || 'use';
+				r.route = r.route || '/';
+				console.log(r.method);
 				router[r.method](r.route, mw_function);
 				}
 			if(!_self.server()){
@@ -392,16 +392,16 @@
 					if(r.regex){
 						r.route = new RegExp(r.regex);
 						}
-					r.method = r.method || 'use'
-					r.route = r.route || '/'
-					_self.clientRouter[r.verb](r.route, mw_function);
+					r.method = r.method || 'use';
+					r.route = r.route || '/';
+					_self.clientRouter[r.method](r.route, mw_function);
 					}
 				}
 			}
 		//Lastly, send the document server side / push the window history client side
 		//this is done only if res.handled has been set by one of the middleware in the chain!
 		router.use(function(req,res,next){
-			// console.log('sender');
+			console.log('sender');
 			// console.log(req);
 			if(res.handled){
 				if(_self.server()){

@@ -277,7 +277,7 @@
 		//Both sides instantiate _self.tlc
 		if(_self.server()){
 			var TLC = require('tlc');
-			var express = require('express')();
+			var express = require('express');
 			var router = express.Router();
 			var fs = require('fs');
 			var cheerio = require('cheerio');

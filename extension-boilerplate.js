@@ -22,8 +22,6 @@
 	var extensionid = "boilerplate";
 	
 	var extension = function(_app, config){
-		var selector = config.bodySelector || 'body'
-		var templates = {};
 		var r = {
 			tlc : {
 			/*

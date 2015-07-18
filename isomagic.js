@@ -34,7 +34,7 @@
  * 		extension loading- fail after some reasonable timeout (options.extLoadingTimeout?)
  * 		jQuery noConflict support
  * 		handle all the errors!
- * 
+ * 		Do a bunch of cloning to avoid side effects from dipshits.
  *****************************************************************************/
 (function(){
 
@@ -370,7 +370,7 @@
 					}
 				r.method = r.method || 'use';
 				r.route = r.route || '/';
-				console.log(r.method);
+				// console.log(r.method);
 				if(router[r.method]){
 					router[r.method](r.route, mw_function);
 					}

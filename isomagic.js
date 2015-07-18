@@ -37,6 +37,12 @@
  * 
  *****************************************************************************/
 (function(){
+
+	// Only Node.JS has a process variable that is of [[Class]] process 
+	var isNode = false;
+	try {isNode = Object.prototype.toString.call(global.process) === '[object process]';} catch(e) {}
+	if(isNode){	root = {};}
+	else {root = window;}
 	
 	/** 
 	 * @constructor IsoMagic
@@ -56,18 +62,24 @@
 	 * @method close Server-only, close the server
 	 */
 	function IsoMagic(config, options, callback){
+		//Store this in a declared var to avoid scoping issues in lambdas, and for clarity.  In this file, _self is ALWAYS the app instance.
+		var _self = this;
+		
 		//Options are, well, optional.  So let's check to see if they passed a function second, and assume that if they did they omitted options
 		if(typeof options == 'function'){
 			callback = options;
 			options = {};
 			}
-		//Store this in a declared var to avoid scoping issues in lambdas, and for clarity.  In this file, _self is ALWAYS the app instance.
-		var _self = this;
 		
 		//Set some reasonable defaults
+		
+		callback = callback || function(){};
+		options = options || {};
+		
 		config.static = typeof config.static != 'undefined' ? config.static : {root:'.',options:{}}
 		if(config.static && !config.static.root){ config.static.root = '.'; }
-		if(config.static && !config.static.options){ config.static.options = {}; }
+		if(config.static && !config.static.options){ config.static.options = {"index":false}; }
+		if(typeof config.static.options.index !== 'undefined' && !config.static.options.index){config.static.options.index = false;}
 		config.basePath = config.basePath || '/'
 		config.document = config.document || 'index.html'
 		config.browserEvents = config.browserEvents || [
@@ -82,11 +94,20 @@
 		
 		//Making this a function so that it can't be (easily/accidentally) changed as a property.
 		//Since JS is weakly typed, this is more of a gesture than an actual security measure.
-		if(options.server){
-			_self.server = function(){return true;}
+		//We allow this to be set explicitly so that you can create a client in an environment like NWjs
+		var trueFunc = function(){return true;}
+		var falseFunc = function(){return false;}
+		if(typeof options.server != 'undefined' && options.server){
+			_self.server = trueFunc;
+			}
+		else if(typeof options.server != 'undefined' && !options.server){
+			_self.server = falseFunc;
+			}
+		else if(isNode){
+			_self.server = trueFunc;
 			}
 		else {
-			_self.server = function(){return false;}			
+			_self.server = falseFunc;
 			}
 		
 		//Instantiate our express instance, or client-side the Router ripped out of express
@@ -426,11 +447,7 @@
 			}
 		}
 
-	// Only Node.JS has a process variable that is of [[Class]] process 
-	var isNode = false;
-	try {isNode = Object.prototype.toString.call(global.process) === '[object process]';} catch(e) {}
-	if(isNode){	root = {};}
-	else {root = window;}
+	
 	
 	//expose the code in the appropriate manner
 	if(isNode){

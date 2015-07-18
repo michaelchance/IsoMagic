@@ -22,8 +22,9 @@ Write your index.js
 //index.js
 var config = require('./path/to/config.json'); //configuration object, same object as the client
 var IsoMagic = require('isomagic');
-var myApp = new IsoMagic(config, function(){
-	myApp.listen(3000);
+var myApp = new IsoMagic(config, function(_app){
+	//This callback recieves a reference to the app that has loaded to avoid scoping issues
+	_app.listen(3000);
 });
 ```
 
@@ -33,6 +34,7 @@ Create your index.html.  There's a few files you're going to need to add to your
 * jQuery
 * the files enclosed in this project's clientrouter/ folder
 * tlc.js, available via `npm install tlc` or at https://github.com/michaelchance/tlc
+	* tlc requires [`lodash`](https://lodash.com/),[`jsonPath`](https://github.com/s3u/JSONPath), and [`pegjs`](http://pegjs.org/)
 * isomagic.js from this project
 
 By default, IsoMagic includes `express.static` middleware pointed at the CWD, so it will
@@ -48,6 +50,9 @@ serve those JS files as long as they're in your project, and you use the appropr
 	<script type="text/javascript" src="path/to/clientrouter/layer.js"></script>
 	<script type="text/javascript" src="path/to/clientrouter/route.js"></script>
 	<script type="text/javascript" src="path/to/clientrouter/index.js"></script>
+	<script type="text/javascript" src="path/to/lodash.min.js"></script>
+	<script type="text/javascript" src="path/to/jsonpath.js"></script>
+	<script type="text/javascript" src="path/to/peg-0.8.0.js"></script>
 	<script type="text/javascript" src="path/to/tlc.js"></script>
 	<script type="text/javascript" src="path/to/isomagic.js"></script>
 	<script type="text/javascript">

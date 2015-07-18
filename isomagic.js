@@ -371,7 +371,13 @@
 				r.method = r.method || 'use';
 				r.route = r.route || '/';
 				console.log(r.method);
-				router[r.method](r.route, mw_function);
+				if(router[r.method]){
+					router[r.method](r.route, mw_function);
+					}
+				else {
+					//unsupported method, will be ignored.  
+					//Useful for allowing POST's on the server, but ignoring them on the client
+					}
 				}
 			if(!_self.server()){
 				// console.log('mounting client middleware');
@@ -394,7 +400,12 @@
 						}
 					r.method = r.method || 'use';
 					r.route = r.route || '/';
-					_self.clientRouter[r.method](r.route, mw_function);
+					if(_self.clientRouter[r.method]){
+						_self.clientRouter[r.method](r.route, mw_function);
+						}
+					else {
+						//as above
+						}
 					}
 				}
 			}

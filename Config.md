@@ -18,7 +18,9 @@ Configuring Extensions
 
 Each extension declared must contain 3 things
 * `id`: this tells IsoMagic what the extension calls itself.  It must match what the extension binds to in the window.
-* `require`: this is what gets passed to `require` on the server.  For npm modules, it's the name, but for homebrewed extensions it may be `"./path/to/myext.js"`
+* `require`: this is what gets passed to `require` on the server.  
+	* For npm modules, it's the name.
+	* For local extensions, use the `"%CWD%"` macro to specify the path to the file. `"%CWD%/path/to/myext.js"`
 * `filePath`: this is a file path to be used by the client to load the file.
 
 ```javascript

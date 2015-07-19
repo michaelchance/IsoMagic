@@ -237,7 +237,10 @@
 				}
 			if(_self.server()){
 				//we're not asynchronous here, so just call the callback
-				var ext = require(config.extensions[i].require);
+				var extreq = config.extensions[i].require;
+				extreq = extreq.replace('%CWD%', process.cwd());
+				// console.log(extreq);
+				var ext = require(extreq);
 				loaded(config.extensions[i].id, ext);
 				}
 			else{

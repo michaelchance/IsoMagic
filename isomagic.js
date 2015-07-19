@@ -164,7 +164,7 @@
 				e.preventDefault();
 				var a = this;
 				var req = {
-					url : a.href,
+					url : a.href.replace(a.origin, ''),
 					target : a.target
 					}
 				

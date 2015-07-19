@@ -425,7 +425,7 @@
 					window.history.pushState({"url":req.originalUrl},'',req.originalUrl);
 					req.url = req.originalUrl;
 					//On successful completion of the middleware chain, call the clientRouter.
-					_app.triggerClientRouter(req,res);
+					_self.triggerClientRouter(req,res);
 					
 					}
 				}
@@ -456,7 +456,8 @@
 		}
 	
 	IsoMagic.prototype.triggerClientRouter = function(req,res){
-		if(!_app.server()){
+		var _self = this;
+		if(!_self.server()){
 			_self.clientRouter(req,res,function(err){
 				if(err){console.error(err);}
 				// console.log('clientRouter finished');

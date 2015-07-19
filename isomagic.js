@@ -28,13 +28,16 @@
  * 		server - boolean, is this a server? default false;
  * 
  * 	TODO
+ * 		triggerClientMiddleware function
  * 		options.pushState - boolean for using window.history api
- * 		options.server - dwiw version of this should be made, so if omitted (typeof == undef) it does something 'reasonable'
+ *		some form of caching for the document, as well as static files
+ *			handle static caching with nginx layer? leave as is for isomagic?
  * 		declaring extension dependencies config.extensions[i].required {Array} throw exception if it's not there
  * 		extension loading- fail after some reasonable timeout (options.extLoadingTimeout?)
  * 		jQuery noConflict support
  * 		handle all the errors!
  * 		Do a bunch of cloning to avoid side effects from dipshits.
+ *		res.delay? requeue response later?
  *****************************************************************************/
 (function(){
 
@@ -422,10 +425,8 @@
 					window.history.pushState({"url":req.originalUrl},'',req.originalUrl);
 					req.url = req.originalUrl;
 					//On successful completion of the middleware chain, call the clientRouter.
-					_self.clientRouter(req,res,function(err){
-						if(err){console.error(err);}
-						console.log('clientRouter finished');
-						});
+					_app.triggerClientRouter(req,res);
+					
 					}
 				}
 			else {
@@ -453,7 +454,15 @@
 			//The client doesn't need to listen
 			}
 		}
-
+	
+	IsoMagic.prototype.triggerClientRouter = function(req,res){
+		if(!_app.server()){
+			_self.clientRouter(req,res,function(err){
+				if(err){console.error(err);}
+				// console.log('clientRouter finished');
+				});
+			}
+		}
 	
 	
 	//expose the code in the appropriate manner

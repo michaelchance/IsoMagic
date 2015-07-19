@@ -329,7 +329,7 @@
 			for(var i in config.browserEvents){
 				$('body').on(config.browserEvents[i],'[data-app-'+config.browserEvents[i]+']',(function(eventname){
 					return function(e){
-						console.log('event!');
+						// console.log('event!');
 						e.preventDefault();
 						_self.tlc.run($(this),e,{'tlcAttr':'data-app-'+eventname})
 						}
@@ -415,7 +415,7 @@
 		//Lastly, send the document server side / push the window history client side
 		//this is done only if res.handled has been set by one of the middleware in the chain!
 		router.use(function(req,res,next){
-			console.log('sender');
+			// console.log('sender');
 			// console.log(req);
 			if(res.handled){
 				if(_self.server()){

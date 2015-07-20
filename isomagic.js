@@ -184,7 +184,7 @@
 				}
 			//When the back button is hit, send the req back through the middleware chain.
 			window.onpopstate = function(event){
-				_self.expressapp(req,{},finalhandler);
+				_self.expressapp(event.state,{},finalhandler);
 				}
 			}
 		
@@ -436,7 +436,10 @@
 				next();
 				}
 			});
-		
+		if(!_self.server()){
+			var thisUrl = window.location.href.replace(window.location.origin,'');
+			window.history.replaceState({"url":thisUrl},'',thisUrl);
+			}
 		// console.log(config.basePath);
 		//Mount the router onto our main expressapp, now that we've parsed our config
 		this.expressapp.use(config.basePath, router);

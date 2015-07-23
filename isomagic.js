@@ -137,22 +137,21 @@
 			//Here we funnel all starts to the middleware chain through a setup function that creates the res
 			//object.  For now, all it does is set up the "redirect" function, to isomorphically mimic express's
 			//built in res.redirect.  The browser client really only cares about get requests, so let's hardcode that for now.
-			var handlereq = function(req){
+			var handlereq = function(req, res){
 				req.method = 'get';
-				var res = {
-					redirect : function(url){
-						var redir_req ={
-							'url':url,
-							'method' : 'get'
-							};
-						var redir_res = this;
-						_self.expressapp(redir_req,redir_res,
-							function(err){
-								if(err){console.error(err);}
-								finalhandler(req);
-								}
-							);
-						}
+				res = res || {};
+				res.redirect = function(url){
+					var redir_req ={
+						'url':url,
+						'method' : 'get'
+						};
+					var redir_res = this;
+					_self.expressapp(redir_req,redir_res,
+						function(err){
+							if(err){console.error(err);}
+							finalhandler(req);
+							}
+						);
 					};
 				_self.expressapp(req,res,function(err){
 					if(err){console.error(err);}
@@ -178,9 +177,9 @@
 				});
 			//Expose a utility function for navigating to a page outside of a traditional link click.
 			//This essentially replaces `window.location = "http://..."`
-			_self.navigate = function(url){
+			_self.navigate = function(url, res){
 				// console.log('navigate');
-				handlereq({'url':url});
+				handlereq({'url':url}, res);
 				}
 			//When the back button is hit, send the req back through the middleware chain.
 			window.onpopstate = function(event){
@@ -232,7 +231,7 @@
 						}
 					}
 				if(finished){
-					callback();
+					_self._initExtensions(config, callback);
 					}
 				}
 			if(_self.server()){
@@ -257,8 +256,37 @@
 			}
 		//self explanatory
 		if(config.extensions.length == 0){
+			//no need to call initExtensions
 			callback();
 			}
+		}
+		
+	IsoMagic.prototype._initExtensions = function(config, callback){	
+		var _self = this;
+		var index = 0;
+		function initNext(){
+			console.log(index +"/"+config.extensions.length);
+			if(index < config.extensions.length){
+				var extensionid = config.extensions[index].id;
+				console.log(extensionid);
+				if(_self.ext[extensionid].init && typeof _self.ext[extensionid].init == 'function'){
+					setTimeout(function(){
+						index++;
+						_self.ext[extensionid].init(initNext);
+						},10)
+					}
+				else {
+					setTimeout(function(){
+						index++;
+						initNext();
+						},10);
+					}
+				}
+			else {
+				callback();
+				}
+			};
+		initNext();
 		}
 	/*
 	 * Up till now in the config process, we've just been setting up.  This is the meat of the application
@@ -275,7 +303,7 @@
 	 *
 	 */
 	IsoMagic.prototype._configureRouter = function(config){
-		// console.log('configuring router');
+		console.log('configuring router');
 		var _self = this;
 		
 		//universal middleware, add the document to res.$
@@ -295,6 +323,7 @@
 				router.use(express.static(config.static.root, config.static.options));
 				}
 			router.use(function(req,res,next){
+				res.start = process.hrtime();
 				fs.readFile(config.document,function(err,text){
 					if(err){
 						console.log(err);
@@ -332,9 +361,10 @@
 			for(var i in config.browserEvents){
 				$('body').on(config.browserEvents[i],'[data-app-'+config.browserEvents[i]+']',(function(eventname){
 					return function(e){
-						// console.log('event!');
+						console.log('event!');
 						e.preventDefault();
-						_self.tlc.run($(this),e,{'tlcAttr':'data-app-'+eventname})
+						e.stopImmediatePropagation();
+						_self.tlc.run($(this),e,{'tlcAttr':'data-app-'+eventname});
 						}
 					})(config.browserEvents[i]))
 				}					
@@ -422,10 +452,13 @@
 			// console.log(req);
 			if(res.handled){
 				if(_self.server()){
+					console.log(process.hrtime(res.start));
 					res.send(res.$.html());
 					}
 				else {
-					window.history.pushState({"url":req.originalUrl},'',req.originalUrl);
+					if(!res.skipPush){
+						window.history.pushState({"url":req.originalUrl},'',req.originalUrl);
+						}
 					req.url = req.originalUrl;
 					//On successful completion of the middleware chain, call the clientRouter.
 					_self.triggerClientRouter(req,res);
@@ -436,13 +469,14 @@
 				next();
 				}
 			});
-		if(!_self.server()){
-			var thisUrl = window.location.href.replace(window.location.origin,'');
-			window.history.replaceState({"url":thisUrl},'',thisUrl);
-			}
 		// console.log(config.basePath);
 		//Mount the router onto our main expressapp, now that we've parsed our config
 		this.expressapp.use(config.basePath, router);
+		if(!_self.server()){
+			var thisUrl = window.location.href.replace(window.location.origin,'');
+			window.history.replaceState({"url":thisUrl},'',thisUrl);
+			_self.triggerClientRouter({"url":thisUrl});
+			}
 		}
 	
 	/**
@@ -464,9 +498,15 @@
 	IsoMagic.prototype.triggerClientRouter = function(req,res){
 		var _self = this;
 		if(!_self.server()){
+			req.method = req.method || 'get';
+			res = res || {};
+			res.data = res.data || {};
+			res.tlc = _self.tlc;
+			res.$ = $;
+			console.log('triggering client router');
 			_self.clientRouter(req,res,function(err){
 				if(err){console.error(err);}
-				// console.log('clientRouter finished');
+				console.log('clientRouter finished');
 				});
 			}
 		}

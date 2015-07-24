@@ -494,7 +494,9 @@
 			//The client doesn't need to listen
 			}
 		}
-	
+	IsoMagic.prototype.historyPush = function(req){
+		window.history.pushState({"url":req.originalUrl},'',req.originalUrl);
+		};
 	IsoMagic.prototype.triggerClientRouter = function(req,res){
 		var _self = this;
 		if(!_self.server()){

@@ -456,9 +456,7 @@
 					res.send(res.$.html());
 					}
 				else {
-					if(!res.skipPush){
-						window.history.pushState({"url":req.originalUrl},'',req.originalUrl);
-						}
+					_self.historyPush(req,{'replace':res.historyReplace});
 					req.url = req.originalUrl;
 					//On successful completion of the middleware chain, call the clientRouter.
 					_self.triggerClientRouter(req,res);
@@ -474,7 +472,7 @@
 		this.expressapp.use(config.basePath, router);
 		if(!_self.server()){
 			var thisUrl = window.location.href.replace(window.location.origin,'');
-			window.history.replaceState({"url":thisUrl},'',thisUrl);
+			_self.historyPush({'originalUrl':thisUrl}, {'replace':true});
 			_self.triggerClientRouter({"url":thisUrl});
 			}
 		}
@@ -494,8 +492,12 @@
 			//The client doesn't need to listen
 			}
 		}
-	IsoMagic.prototype.historyPush = function(req){
-		window.history.pushState({"url":req.originalUrl},'',req.originalUrl);
+	IsoMagic.prototype.historyPush = function(req, options){
+		var method = "pushState";
+		if(options.replace){
+			method = "replaceState"
+			}
+		window.history[method]({'url':req.originalUrl},'',req.originalUrl);
 		};
 	IsoMagic.prototype.triggerClientRouter = function(req,res){
 		var _self = this;

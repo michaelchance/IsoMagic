@@ -1,6 +1,6 @@
 {
   "name": "isomagic",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "An IsoMorphic JavaScript Framework based on Express and TLC",
   "main": "isomagic.js",
   "scripts": {

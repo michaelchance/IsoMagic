@@ -339,10 +339,19 @@
 			}
 		else {
 			_self.clientRouter = new window.Router();
+			_self.clientInnerRouter = new window.Router();
 			_self.tlc = new window.TLC();
 			router = new window.Router();
 			router.use(function(req,res,next){
 				// console.log(req);
+				var search = req.originalUrl.split('?');
+				if(search.length > 1){
+					search = search[1];
+					req.query = search.split("&").map(function(n){return n = n.split("="),this[n[0]] = n[1],this}.bind({}))[0];
+					}
+				else {
+					req.query = {};
+					}
 				res.$ = $;
 				next();
 				});
@@ -436,8 +445,8 @@
 						}
 					r.method = r.method || 'use';
 					r.route = r.route || '/';
-					if(_self.clientRouter[r.method]){
-						_self.clientRouter[r.method](r.route, mw_function);
+					if(_self.clientInnerRouter[r.method]){
+						_self.clientInnerRouter[r.method](r.route, mw_function);
 						}
 					else {
 						//as above
@@ -471,6 +480,7 @@
 		//Mount the router onto our main expressapp, now that we've parsed our config
 		this.expressapp.use(config.basePath, router);
 		if(!_self.server()){
+			_self.clientRouter.use(config.basePath, _self.clientInnerRouter);
 			var thisUrl = window.location.href.replace(window.location.origin,'');
 			_self.historyPush({'originalUrl':thisUrl}, {'replace':true});
 			_self.triggerClientRouter({"url":thisUrl});
@@ -493,6 +503,7 @@
 			}
 		}
 	IsoMagic.prototype.historyPush = function(req, options){
+		options = options || {};
 		var method = "pushState";
 		if(options.replace){
 			method = "replaceState"
@@ -503,6 +514,9 @@
 		var _self = this;
 		if(!_self.server()){
 			req.method = req.method || 'get';
+			if(req.originalUrl){
+				req.url = req.originalUrl;
+				}
 			res = res || {};
 			res.data = res.data || {};
 			res.tlc = _self.tlc;
